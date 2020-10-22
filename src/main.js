@@ -8,6 +8,13 @@ import 'element-ui/lib/theme-chalk/index.css'
 import  './assets/fonts/iconfont.css'
 //导入全局样式表
 import './assets/global.css'
+
+//配置axios
+import axios from 'axios'
+//配置请求的跟路径
+axios.defaults.baseURL ='http://127.0.0.1:8888/api/private/v1'
+
+Vue.prototype.$http =axios
 Vue.use(ElementUI)
 Vue.config.productionTip = false
 
