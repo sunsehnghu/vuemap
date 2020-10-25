@@ -10,9 +10,12 @@
          </el-header>
          <!-- 页面主体区域 -->
     <el-container>
-         <el-aside width="200px">
+         <el-aside width="isCollapse ? '64px' : '200px'">
+             <div class="toggle-button" @click="toggleCollapse"><span> |||</span></div>
        <!-- 侧边栏菜单区 -->
-        <el-menu background-color="#333744" text-color="#fff" active-text-color="#409EFF">
+        <el-menu background-color="#333744" text-color="#fff" active-text-color="#409EFF" 
+        unique-opened :collapse="isCollapse" 
+        :collapse-transition="false" :router="true" :default-active="activePath">  
         <!-- 一级菜单 -->
       <el-submenu  :index="item.id+''" v-for="item in menulist" :key="item.id">
         <!-- 一级菜单的模板区 -->
@@ -23,7 +26,8 @@
           <span >{{item.authName}}</span>
         </template>
         <!-- 二级菜单 -->
-        <el-menu-item :index="subItem.id+''" v-for="subItem in item.children" :key="subItem.id">
+        <el-menu-item :index="'/'+subItem.path"  @click="saveNavState('/'+subItem.path)"
+        v-for="subItem in item.children" :key="subItem.id">
             <template slot="title">
             <!-- 图标 -->
           <i class="el-icon-menu"></i>
@@ -36,7 +40,9 @@
     </el-menu>
          </el-aside>
          <!-- 右侧内容主题 -->
-    <el-main>Main</el-main>
+    <el-main>
+        <router-view></router-view>
+    </el-main>
    </el-container>
   </el-container>
 </template>
@@ -44,6 +50,7 @@
 export default {
     created(){
       this.getMenuList()
+      this.activePath=window.sessionStorage.getItem('activePath')
     },
     name:"Home",
     data() {
@@ -56,7 +63,11 @@ export default {
                 '101':'iconfont icon-shangpin',
                 '102':'iconfont icon-danju',
                 '145':'iconfont icon-baobiao'
-            }
+            },
+            //是否折叠
+            isCollapse: false,
+            //被激活的链接地址
+            activePath:''
             
         }
     },
@@ -72,8 +83,16 @@ export default {
       if(res.meta.status !==200) return this.$message.error(res.meta.msg)
        this.menulist=res.data
        
+    },
+     //点击按钮，切换菜单的折叠与展开
+    toggleCollapse(){
+          this.isCollapse =!this.isCollapse
+    },
+    saveNavState(activePath){
+         window.sessionStorage.setItem('activePath',activePath)
+         this.activePath=activePath
     }
-    }
+    },
     
 }
 </script>
@@ -97,6 +116,10 @@ export default {
  }
  .el-aside{
     background-color: #333744;
+    
+ }
+ .el-aside .el-menu{
+     border-right:none ;
  }
  .el-main{
      background-color: #E9EDF1;
@@ -113,4 +136,15 @@ export default {
 .iconfont{
     margin-right: 10px;
 }
+.toggle-button{
+    background-color: #4A5064;
+    text-align: center;
+    line-height: 20px;
+    color: #fff;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+
+}
+
 </style>
