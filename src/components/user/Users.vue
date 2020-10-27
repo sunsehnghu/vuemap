@@ -36,7 +36,9 @@
        <el-table-column label="操作" width="180px" >
            <template slot-scope="">
                <!-- 修改按钮 -->
-               <el-button type="primary" icon="el-icon-edit" size="mini"></el-button>
+               <el-button type="primary" icon="el-icon-edit" 
+               size="mini" @click="showEditDialog()">
+               </el-button>
                <!-- 删除按钮 -->
                <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
                <!-- 分配按钮 -->
@@ -61,9 +63,9 @@
     <el-dialog
        title="添加用户"
        :visible.sync="addDialogVisible"
-        width="50%">
+        width="50%" @close="addDialogClosed">
         <!-- 内容主题曲 -->
-      <el-form :model="addForm" :rules="addFormRules" ref="addRuleForm" label-width="70px" >
+      <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="70px" >
         <el-form-item label="用户名" prop="username">
     <el-input v-model="addForm.username"></el-input>
   </el-form-item>
@@ -80,15 +82,43 @@
     <!-- 底部区域 -->
     <span slot="footer" class="dialog-footer">
        <el-button @click="addDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addDialogVisible = false">确 定</el-button>
+        <el-button type="primary" @click="addUser">确 定</el-button>
     </span>
-    </el-dialog>    
+    </el-dialog>  
+    <!-- 修改用户对话框 -->
+      <el-dialog
+  title="修改用户"
+  :visible.sync="editDialogVisible"
+  width="50%">
+  <span>这是一段信息</span>
+  <span slot="footer" class="dialog-footer">
+    <el-button @click="editDialogVisible = false">取 消</el-button>
+    <el-button type="primary" @click="editDialogVisible = false">确 定</el-button>
+  </span>
+</el-dialog>
     </div>
 </template>
 <script>
 export default {
     name:'Users',
     data() {
+        //校验邮箱的规则
+        var checkEmail = (rule ,value ,cb)=>{
+             const regEmail = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(\.[a-zA-Z0-9_-])+/ 
+             if (regEmail.test(value)){
+                 //合法的邮箱
+                 return cb()
+             }
+             cb(new Error('请输入合法的邮箱'))
+        }
+        //校验手机号的验证规则
+        var checkMobile = (rule,value,cb) =>{
+            const regMobile =/^(0|86|17951)?(13[0-9]|15[0123456789]|17[3678]|18[0-9]|14[57])[0-9]{8}$/
+            if(regMobile.test(value)){
+                return cb()
+            }
+            cb(new Error('请输入合法的手机号'))
+        }
         return {
             //获取用户列表的参数对象
             queryInfo:{
@@ -105,24 +135,27 @@ export default {
             //添加用户的表单数据
             addForm:{
                 username:'',
-                email:'',
                 password:'',
+                email:'',
                 mobile:''
                 
             },
             //添加表单的检验规则对象
             addFormRules:{
-                username:[{ required:true,
-                message:'请输入用户名',
-                trigger:'blur'
+                username:[
+                { required:true,
+                  message:'请输入用户名',
+                  trigger:'blur'
                 },
                 {
                     min:3,
                     max:10,
                     message:'用户名的长度在3-10个字符之间',
                     trigger:'blur'
-                }],
-                password:[{ required:true,
+                }
+                ],
+                password:[
+                { required:true,
                 message:'请输入密码',
                 trigger:'blur'
                 },
@@ -131,29 +164,32 @@ export default {
                     max:10,
                     message:'密码的长度在3-10个字符之间',
                     trigger:'blur'
-                }],
+                }
+                ],
                  email:[{ required:true,
                 message:'请输入邮箱地址',
                 trigger:'blur'
                 },
                 {
-                    min:3,
-                    max:10,
-                    message:'邮箱地址的长度在3-10个字符之间',
-                    trigger:'blur'
+                   validator:checkEmail,
+                   trigger:'blur'
+                 
+
                 }],
                  mobile:[{ required:true,
                 message:'请输入手机号',
                 trigger:'blur'
                 },
                 {
-                    min:3,
-                    max:10,
-                    message:'手机号的长度在3-11个字符之间',
-                    trigger:'blur'
+                   validator:checkMobile,
+                   trigger:'blur'
+                
                 }]
-            }
-        }
+            },
+            // 控制修改用户对话框的显示与隐藏
+            editDialogVisible:false,
+
+        }  
     },
     created(){
         this.getUserList()
@@ -190,6 +226,30 @@ export default {
                 return this.$message.error('更新用户状态失败')
             }
             this.$message.success('更新用户状态成功!')
+        },
+        //监听添加对话框的关闭事件
+        addDialogClosed(){
+            this.$refs.addFormRef.resetFields()
+        },
+        //点击确认按钮添加新用户
+        addUser(){
+            this.$refs.addFormRef.validate(async valid => {
+                console.log(valid);
+                if(!valid) return ;
+                //发送添加用户的网络请求
+            const {data :res} = await this.$http.post('users',this.addForm)
+            if(res.meta.status!==201){
+                this.$message.error('添加用户失败！')
+            }
+                this.$message.success('添加用户成功')
+                //隐藏添加用户的对话框
+                this.addDialogVisible=false
+                this.getUserList()
+            })
+        },
+        // 展示编辑用户的对话框
+        showEditDialog(){
+                 this.editDialogVisible=true
         }
         }
 }
