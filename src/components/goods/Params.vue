@@ -26,12 +26,68 @@
             </el-row>
             <!-- tab页签区域 -->
             <el-tabs v-model="activeName" @tab-click="handleTabClick">
-    <el-tab-pane label="动态参数" name="first">
-        <el-button type="primary" size="mini"  :disabled="isBtnDisabled">添加参数</el-button > </el-tab-pane>
-    <el-tab-pane label="静态属性" name="second">
-       <el-button type="primary" size="mini"  :disabled="isBtnDisabled">添加属性</el-button> </el-tab-pane>
+    <el-tab-pane label="动态参数" name="many">
+        <el-button type="primary" size="mini"  :disabled="isBtnDisabled" @click="addDialogVisible=true">添加参数</el-button > 
+        <!-- 动态参数表格 -->
+        <el-table :data="manyTableData" border stripe>
+            <!-- 展开列 -->
+            <el-table-column type="expand"></el-table-column>
+            <!-- 索引列 -->
+            <el-table-column type="index"></el-table-column>
+            <el-table-column label="参数名称" prop="attr_name"></el-table-column>
+            <el-table-column label="操作" >
+                <template slot-scope="scope">
+                   <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row.attr_id)">编辑</el-button>
+                   <el-button type="danger" icon="el-icon-delete" size="mini">删除</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+        </el-tab-pane>
+    <el-tab-pane label="静态属性" name="only">
+       <el-button type="primary" size="mini"  :disabled="isBtnDisabled" @click="addDialogVisible=true">添加属性</el-button> 
+       <!--静态属性表格 -->
+        <el-table :data="onlyTableData" border stripe>
+            <!-- 展开列 -->
+            <el-table-column type="expand"></el-table-column>
+            <!-- 索引列 -->
+            <el-table-column type="index"></el-table-column>
+            <el-table-column label="属性名称" prop="attr_name"></el-table-column>
+            <el-table-column label="操作" >
+                <template slot-scope="scope">
+                   <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row.attr_id)">编辑</el-button>
+                   <el-button type="danger" icon="el-icon-delete" size="mini">删除</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+       </el-tab-pane>
   </el-tabs>
         </el-card>
+        <!-- 添加参数的对话框 -->
+    <el-dialog :title="'添加'+ titleText" :visible.sync="addDialogVisible"  width="50%" @close="addDialogClosed">
+  <!-- 添加参数的对话框 -->
+  <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="100px" >
+  <el-form-item :label="titleText" prop="attr_name">
+    <el-input v-model="addForm.attr_name"></el-input>
+  </el-form-item>
+  </el-form>
+  <span slot="footer" class="dialog-footer">
+    <el-button @click="addDialogVisible = false">取 消</el-button>
+    <el-button type="primary" @click="addParams">确 定</el-button>
+  </span>
+</el-dialog>     
+             <!-- 修改参数的对话框    -->
+     <el-dialog :title="'修改'+ titleText" :visible.sync="editDialogVisible"  width="50%" @close="editDialogClosed">
+  <!-- 添加参数的对话框 -->
+  <el-form :model="editForm" :rules="editFormRules" ref="editFormRef" label-width="100px" >
+  <el-form-item :label="titleText" prop="attr_name">
+    <el-input v-model="editForm.attr_name"></el-input>
+  </el-form-item>
+  </el-form>
+  <span slot="footer" class="dialog-footer">
+    <el-button @click="editDialogVisible = false">取 消</el-button>
+    <el-button type="primary" @click="editParams">确 定</el-button>
+  </span>
+</el-dialog>            
     </div>
 </template>
 <script>
@@ -50,7 +106,34 @@ export default {
             //级联选择框双向绑定到的数组
             selectCateKeys:[],
             //被激活页签的名称
-            activeName:'first'
+            activeName:'many',
+            //动态参数数据
+            manyTableData:[],
+            //静态属性的数据
+            onlyTableData:[],
+            //控制对话康的显示与隐藏
+            addDialogVisible:false,
+            //添加参数表单的数据对象
+            addForm:{
+                attr_name:''
+            },
+            //添加表单的验证规则对象
+            addFormRules:{
+                attr_name:[
+                    {required:true, message:'请输入参数名称',trigger:'blur'}
+                ]
+            },
+            //控制修改对话框的显示与隐藏
+            editDialogVisible:false,
+            //修改的表单数据对象
+            editForm:{
+                attr_name:''
+            },
+            //修改表单的验证规则
+            editFormRules:{
+                 attr_name:[
+                    {required:true, message:'请输入参数名称',trigger:'blur'}]
+            }
         }
     },
     created(){
@@ -68,16 +151,70 @@ export default {
         },
         //级联选择框选中变化，会触发这个函数
         handleChange(){
-            //证明选中的不是三级分类
+           this.getParamsData()
+        },
+        //tab页签点击事件的处理函数
+        handleTabClick(){
+            console.log(this.activeName);
+            this.getParamsData()
+        },
+        // 获取参数的列表数据
+        async getParamsData(){
+             //证明选中的不是三级分类
             if(this.selectCateKeys.length!=3){
                 this.selectCateKeys=[]
                 return
             }
             console.log(this.selectCateKeys);
+            //根据所选分类的id 和当前所处的面板，获取对应的参数
+           const{data: res}= await this.$http.get(`categories/${this.cateId}/attributes`,{params:{sel:this.activeName}})
+           if(res.meta.status!==200){
+               return this.$message.error('获取参数列表失败')
+           }
+           console.log(res.data);
+           if(this.activeName ==='many'){
+               this.manyTableData=res.data
+           }else{
+               this.onlyTableData=res.data
+           }
         },
-        //tab页签点击事件的处理函数
-        handleTabClick(){
-            console.log(this.activeName);
+        addDialogClosed(){
+            this.$refs.addFormRef.resetFields()
+        },
+        addParams(){
+            this.$refs.addFormRef.validate(async valid=>{
+                if(!valid) return
+                const{data:res}= await this.$http.post(`categories/${this.cateId}/attributes`,{
+                    attr_name:this.addForm.attr_name,
+                    attr_sel: this.activeName
+                })
+                if(res.meta.status!==201){
+                    return this.$message.error('添加参数失败')
+                }
+                this.$message.success('添加参数成功!')
+                this.addDialogVisible= false,
+                this.getParamsData()
+            })
+        },
+        // 点击按钮，展示修改对话框
+       async showEditDialog(attr_id){
+            
+            console.log(this.attr_id);
+        const {data: res} = await this.$http.get(`categories/${this.cateId}/attributes/${attr_id}`,{params:{attr_sel:this.activeName}})
+        if(res.meta.status!==200){
+            return this.$message.error('获取参数失败!')
+        }
+        this.editForm =res.data
+           this.editDialogVisible = true
+
+        },
+        // 重置修改的表单
+        editDialogClosed(){
+            this.$refs.editFormRef.resetFields()
+        },
+        //点击按钮，修改参数信息
+        editParams(){
+
         }
     },
     computed:{
@@ -87,6 +224,20 @@ export default {
                       return true
                   }
                   return false
+              },
+              //当前选中的三级分类的id
+              cateId(){
+                  if(this.selectCateKeys.length===3){
+                      return this.selectCateKeys[2]
+                  }
+                  return null
+              },
+              //动态计算标题的文本
+              titleText(){
+                  if(this.activeName==='many'){
+                      return '动态参数'
+                  }
+                  return '静态参数'
               }
     }
 }
