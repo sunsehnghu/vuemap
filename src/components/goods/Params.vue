@@ -37,7 +37,7 @@
             <el-table-column label="参数名称" prop="attr_name"></el-table-column>
             <el-table-column label="操作" >
                 <template slot-scope="scope">
-                   <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row.attr_id)">编辑</el-button>
+                   <el-button type="primary" icon="el-icon-edit" size="mini"  @click="showEditDialog(scope.row.attr_id)">编辑</el-button>
                    <el-button type="danger" icon="el-icon-delete" size="mini">删除</el-button>
                 </template>
             </el-table-column>
@@ -101,7 +101,7 @@ export default {
             cateProps:{
                 value:'cat_id',
                 label:'cat_name',
-                children:'children'
+                children:'children',
             },
             //级联选择框双向绑定到的数组
             selectCateKeys:[],
@@ -115,7 +115,7 @@ export default {
             addDialogVisible:false,
             //添加参数表单的数据对象
             addForm:{
-                attr_name:''
+                attr_name:'',
             },
             //添加表单的验证规则对象
             addFormRules:{
@@ -127,7 +127,7 @@ export default {
             editDialogVisible:false,
             //修改的表单数据对象
             editForm:{
-                attr_name:''
+               attr_name:''
             },
             //修改表单的验证规则
             editFormRules:{
@@ -198,12 +198,14 @@ export default {
         },
         // 点击按钮，展示修改对话框
        async showEditDialog(attr_id){
-            
-            console.log(this.attr_id);
-        const {data: res} = await this.$http.get(`categories/${this.cateId}/attributes/${attr_id}`,{params:{attr_sel:this.activeName}})
-        if(res.meta.status!==200){
-            return this.$message.error('获取参数失败!')
-        }
+            console.log(this.cateId);
+            console.log(attr_id);
+        const {data :res} =await this.$http.get(`categories/${this.cateId}/attributes/${attr_id}`,{params:{attr_sel:this.activeName}})
+        console.log(res.data);
+        // if(res.meta.status!==200){
+        //     return this.$message.error('获取参数失败!')
+        // }
+        console.log(res.data);
         this.editForm =res.data
            this.editDialogVisible = true
 

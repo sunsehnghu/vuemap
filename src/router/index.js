@@ -12,6 +12,8 @@ const Rights=()=>import('../components/power/Rights')
 const Roles=()=>import('../components/power/Roles')
 const Cate=()=>import('../components/goods/Cate')
 const Params=()=>import('../components/goods/Params')
+const List=()=>import('../components/goods/List')
+const Add=()=>import('../components/goods/Add')
 const routes = [
   {
     path: '/',
@@ -29,7 +31,7 @@ const routes = [
     redirect:'/welcome',
     children:[{path:'/welcome' , component:Welcome} ,{path:'/users' ,component:Users} ,
     {path:'/rights',component:Rights},{path:'/roles',component:Roles},{path:'/categories',component:Cate},
-  {path:'/params',component:Params}]
+  {path:'/params',component:Params},{path:'/goods',component:List},{path:'/goods/add',component:Add}]
   },
   
 ]

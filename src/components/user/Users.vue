@@ -349,6 +349,7 @@ export default {
         },
         //根据id删除用户的信息
         async  removeUserById(id){
+            console.log(id);
             //   console.log(id);
             //弹出确认弹框
          const confirmResult= await this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
