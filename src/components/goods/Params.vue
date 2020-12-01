@@ -127,7 +127,7 @@ export default {
             editDialogVisible:false,
             //修改的表单数据对象
             editForm:{
-               attr_name:''
+              attr_name:''
             },
             //修改表单的验证规则
             editFormRules:{

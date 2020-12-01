@@ -31,7 +31,7 @@ export default {
         return {
             //这是登录表单的数据绑定对象
             loginForm:{
-                username:'admin',
+                username:'sunshenghu',
                 password:'123456'
             },
             //这是表单验证规则验证
@@ -73,7 +73,10 @@ export default {
 </script>
 <style  scoped>
     .login_container{
-        background-color: #2b4b6b;
+        /* background-color: #2b4b6b ; */
+        background-image: url('../assets/bh.jpg');
+        background-position: center 0px;
+        background-size: cover;
         height: 100%;
     }
     .login_box{
