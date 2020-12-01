@@ -15,6 +15,7 @@ const Params=()=>import('../components/goods/Params')
 const List=()=>import('../components/goods/List')
 const Add=()=>import('../components/goods/Add')
 const Order=()=>import('../components/order/Order')
+const Report=()=>import('../components/report/Report')
 const routes = [
   {
     path: '/',
@@ -32,7 +33,7 @@ const routes = [
     redirect:'/welcome',
     children:[{path:'/welcome' , component:Welcome} ,{path:'/users' ,component:Users} ,
     {path:'/rights',component:Rights},{path:'/roles',component:Roles},{path:'/categories',component:Cate},
-  {path:'/params',component:Params},{path:'/goods',component:List},{path:'/goods/add',component:Add},{path:'/orders',component:Order}]
+  {path:'/params',component:Params},{path:'/goods',component:List},{path:'/goods/add',component:Add},{path:'/orders',component:Order},{path:'/reports',component:Report}]
   },
   
 ]
